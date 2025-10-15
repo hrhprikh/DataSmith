@@ -10,10 +10,9 @@ pip install -r requirements.txt
 echo "📁 Creating necessary directories..."
 mkdir -p data/raw data/cleaned data/processed data/labeled uploads temp
 
-echo "🔧 Setting up environment..."
-# Create uploads and temp directories
-cd backend
-mkdir -p uploads temp
+echo "🔧 Setting up backend environment..."
+# Create uploads and temp directories in backend
+mkdir -p backend/uploads backend/temp
 
 echo "✅ Build completed successfully!"
-echo "🚀 DataSmith AI is ready for deployment!"
+echo "🚀 DataSmith AI is ready for deployment with Gunicorn + Uvicorn!"

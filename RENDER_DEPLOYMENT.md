@@ -31,7 +31,7 @@ Environment: Python 3
 Region: Oregon (US West) or your preferred region
 Branch: master
 Build Command: ./build.sh
-Start Command: cd backend && python -m uvicorn app:app --host 0.0.0.0 --port $PORT
+Start Command: gunicorn -k uvicorn.workers.UvicornWorker backend.app:app --host 0.0.0.0 --port $PORT
 ```
 
 ### **3. Environment Variables**
@@ -155,12 +155,17 @@ Current setup allows:
    - Verify all dependencies in requirements.txt
    - Review build logs in Render dashboard
 
-2. **Runtime Errors**
+2. **WSGI vs ASGI Error**
+   - **Problem**: Render tries to run `gunicorn your_application.wsgi` (Django style)
+   - **Solution**: Use Gunicorn with Uvicorn worker: `gunicorn -k uvicorn.workers.UvicornWorker backend.app:app`
+   - **Fixed in**: Procfile and render.yaml
+
+3. **Runtime Errors**
    - Check application logs
    - Verify environment variables
    - Test locally first
 
-3. **Memory Issues**
+4. **Memory Issues**
    - Optimize DataFrame operations
    - Use streaming for large files
    - Consider upgrading plan
