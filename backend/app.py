@@ -68,7 +68,14 @@ def clean_for_json(data):
 # Add CORS middleware to allow frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend origins
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "http://localhost:5000", 
+        "http://127.0.0.1:5000",
+        "https://*.onrender.com",
+        "*"  # For development - remove in production
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -1623,3 +1630,19 @@ async def pdf_health_check():
             "error": str(e),
             "pdf_libraries_available": False
         }
+
+# For Render deployment
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    
+    # Get port from environment variable (required by Render)
+    port = int(os.environ.get("PORT", 8000))
+    
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",
+        port=port,
+        reload=False,  # Disable reload in production
+        access_log=True
+    )
