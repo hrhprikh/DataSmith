@@ -1594,3 +1594,28 @@ body {
         text-align: center;
     }
 }
+
+/* Feature List Styles for Log Analytics */
+.feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #007bff;
+    font-size: 0.9rem;
+}
+
+.feature-item i {
+    color: #007bff;
+    font-size: 1rem;
+    width: 16px;
+    text-align: center;
+}

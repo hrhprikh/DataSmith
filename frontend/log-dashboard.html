@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataSmith AI - Log Analytics Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .dashboard-card h3 {
+            margin: 0 0 15px 0;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .risk-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .risk-critical { background: #ff4757; color: white; }
+        .risk-high { background: #ff6b6b; color: white; }
+        .risk-medium { background: #ffa502; color: white; }
+        .risk-low { background: #26de81; color: white; }
+        
+        .attacker-item {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .attacker-ip {
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .attacker-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .anomaly-item {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 4px solid #ff4757;
+        }
+        
+        .anomaly-severity {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .timeline-chart {
+            height: 300px;
+            position: relative;
+        }
+        
+        .heatmap-container {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 2px;
+            margin: 10px 0;
+        }
+        
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+        
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .overview-stat {
+            text-align: center;
+            padding: 15px;
+            background: var(--input-bg);
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+        
+        .upload-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            border: 2px dashed var(--border-color);
+            margin: 20px;
+        }
+        
+        .demo-button {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 1rem;
+        }
+        
+        .demo-button:hover {
+            opacity: 0.9;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #ff4757;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">📊</span>
+                <span class="logo-text">DataSmith AI</span>
+                <span class="logo-subtitle">Log Analytics</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">🏠 Home</a>
+                <a href="processing.html">⚡ Processing</a>
+                <a href="conversions.html">🔄 Conversions</a>
+                <a href="log-dashboard.html" class="active">📊 Log Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Upload Section -->
+        <div id="uploadSection" class="upload-section">
+            <h1>📊 Log Analytics Dashboard</h1>
+            <p>Upload your log files to generate comprehensive security analytics</p>
+            
+            <div class="file-upload-area" onclick="document.getElementById('logFileInput').click()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">
+                    <strong>Click to upload log files</strong>
+                    <br>Supports CSV, LOG, TXT formats
+                </div>
+            </div>
+            
+            <input type="file" id="logFileInput" accept=".csv,.log,.txt" style="display: none;">
+            
+            <div style="margin: 20px 0;">
+                <button class="demo-button" onclick="loadDemoDashboard()">
+                    🎮 Load Demo Dashboard
+                </button>
+                <button class="demo-button" onclick="runSecurityAnalysis()" style="background: #ff4757;">
+                    🔍 Quick Security Scan
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Content (Initially Hidden) -->
+        <div id="dashboardContent" style="display: none;">
+            <!-- Overview Section -->
+            <div class="dashboard-card">
+                <h3>📈 Overview Statistics</h3>
+                <div id="overviewStats" class="overview-grid">
+                    <!-- Stats will be populated here -->
+                </div>
+            </div>
+
+            <!-- Security Summary -->
+            <div class="dashboard-card">
+                <h3>🛡️ Security Summary</h3>
+                <div id="securitySummary">
+                    <!-- Security info will be populated here -->
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-container">
+                <!-- Top Attacker IPs -->
+                <div class="dashboard-card">
+                    <h3>🚨 Top Attacker IPs</h3>
+                    <div id="topAttackers">
+                        <!-- Top attackers will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Attack Timeline -->
+                <div class="dashboard-card">
+                    <h3>⏰ Attack Types Timeline</h3>
+                    <div class="timeline-chart">
+                        <canvas id="attackTimelineChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Status Code Heatmap -->
+                <div class="dashboard-card">
+                    <h3>🌡️ Status Code Heatmap</h3>
+                    <div id="statusHeatmap">
+                        <!-- Heatmap will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Live Anomalies -->
+                <div class="dashboard-card">
+                    <h3>⚠️ Live Anomalies Detected</h3>
+                    <div id="liveAnomalies">
+                        <!-- Anomalies will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Attack Distribution -->
+                <div class="dashboard-card">
+                    <h3>🎯 Attack Type Distribution</h3>
+                    <div class="timeline-chart">
+                        <canvas id="attackDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Geographical Analysis -->
+                <div class="dashboard-card">
+                    <h3>🌍 IP Analysis</h3>
+                    <div id="geographicalAnalysis">
+                        <!-- IP analysis will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Analyzing Log Data...</h3>
+            <p>Generating security insights and visualizations</p>
+        </div>
+    </div>
+
+    <script>
+        let currentDashboardData = null;
+        let attackTimelineChart = null;
+        let attackDistributionChart = null;
+
+        // File upload handling
+        document.getElementById('logFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadAndAnalyzeFile(file);
+            }
+        });
+
+        async function uploadAndAnalyzeFile(file) {
+            showLoading(true);
+            
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/logs/dashboard', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    currentDashboardData = result.dashboard;
+                    displayDashboard(result.dashboard);
+                    showNotification('✅ Dashboard generated successfully!', 'success');
+                } else {
+                    showNotification('❌ Error: ' + result.detail, 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Upload failed: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadDemoDashboard() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/logs/dashboard-demo');
+                const result = await response.json();
+                
+                currentDashboardData = result.dashboard;
+                displayDashboard(result.dashboard);
+                showNotification('🎮 Demo dashboard loaded!', 'success');
+            } catch (error) {
+                showNotification('❌ Failed to load demo: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function runSecurityAnalysis() {
+            if (!currentDashboardData) {
+                showNotification('⚠️ Please upload a log file first', 'warning');
+                return;
+            }
+            
+            showNotification('🔍 Security analysis complete! Check the dashboard for details.', 'info');
+        }
+
+        function displayDashboard(data) {
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+
+            // Display overview stats
+            displayOverviewStats(data.overview);
+            
+            // Display security summary
+            displaySecuritySummary(data.security_summary);
+            
+            // Display top attackers
+            displayTopAttackers(data.top_attackers);
+            
+            // Display attack timeline chart
+            displayAttackTimeline(data.attack_timeline);
+            
+            // Display status code heatmap
+            displayStatusHeatmap(data.status_heatmap);
+            
+            // Display anomalies
+            displayAnomalies(data.anomalies);
+            
+            // Display attack distribution
+            displayAttackDistribution(data.attack_timeline);
+            
+            // Display geographical analysis
+            displayGeographicalAnalysis(data.geographical);
+        }
+
+        function displayOverviewStats(overview) {
+            const container = document.getElementById('overviewStats');
+            container.innerHTML = `
+                <div class="overview-stat">
+                    <div class="stat-value">${overview.total_requests.toLocaleString()}</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="stat-value">${overview.unique_ips}</div>
+                    <div class="stat-label">Unique IPs</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="stat-value">${Math.round(overview.requests_per_hour)}</div>
+                    <div class="stat-label">Requests/Hour</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="stat-value">${Object.keys(overview.status_distribution).length}</div>
+                    <div class="stat-label">Status Codes</div>
+                </div>
+            `;
+        }
+
+        function displaySecuritySummary(security) {
+            const container = document.getElementById('securitySummary');
+            const riskClass = `risk-${security.risk_level}`;
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <span class="risk-indicator ${riskClass}">${security.risk_level} Risk</span>
+                    <span style="margin-left: 10px;">Score: ${security.risk_score}/100</span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>Risk Factors:</strong>
+                    <ul style="margin-top: 5px;">
+                        ${security.risk_factors.map(factor => `<li>${factor}</li>`).join('')}
+                    </ul>
+                </div>
+                <div>
+                    <strong>Recommendations:</strong>
+                    <ul style="margin-top: 5px;">
+                        ${security.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        function displayTopAttackers(attackers) {
+            const container = document.getElementById('topAttackers');
+            
+            if (!attackers || attackers.length === 0) {
+                container.innerHTML = '<p>No suspicious activity detected</p>';
+                return;
+            }
+            
+            container.innerHTML = attackers.map(attacker => `
+                <div class="attacker-item">
+                    <div class="attacker-ip">${attacker.ip}</div>
+                    <div class="attacker-stats">
+                        <span>Risk: <strong>${attacker.risk_score}/100</strong></span>
+                        <span>Requests: <strong>${attacker.total_requests}</strong></span>
+                        <span>Errors: <strong>${attacker.error_requests}</strong></span>
+                        <span>Attacks: <strong>${attacker.attack_attempts}</strong></span>
+                    </div>
+                    ${attacker.attack_types.length > 0 ? 
+                        `<div style="margin-top: 5px; font-size: 0.9rem;">
+                            Attack Types: ${attacker.attack_types.join(', ')}
+                        </div>` : ''
+                    }
+                </div>
+            `).join('');
+        }
+
+        function displayAttackTimeline(timeline) {
+            const ctx = document.getElementById('attackTimelineChart').getContext('2d');
+            
+            if (attackTimelineChart) {
+                attackTimelineChart.destroy();
+            }
+            
+            const timelineData = timeline.timeline || [];
+            const labels = timelineData.map(item => new Date(item.hour).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}));
+            const attackData = timelineData.map(item => item.total_attacks);
+            
+            attackTimelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Attack Attempts',
+                        data: attackData,
+                        borderColor: '#ff4757',
+                        backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayStatusHeatmap(heatmapData) {
+            const container = document.getElementById('statusHeatmap');
+            
+            if (!heatmapData || !heatmapData.heatmap_data) {
+                container.innerHTML = '<p>No heatmap data available</p>';
+                return;
+            }
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const maxRequests = Math.max(...heatmapData.heatmap_data.map(item => item.total_requests));
+            
+            let heatmapHTML = '<div style="margin-bottom: 10px; font-size: 0.9rem;">Hours (0-23) →</div>';
+            
+            days.forEach(day => {
+                heatmapHTML += `<div style="display: flex; align-items: center; margin: 2px 0;">`;
+                heatmapHTML += `<div style="width: 80px; font-size: 0.8rem; text-align: right; margin-right: 10px;">${day.substr(0, 3)}</div>`;
+                heatmapHTML += `<div class="heatmap-container">`;
+                
+                for (let hour = 0; hour < 24; hour++) {
+                    const dayHourData = heatmapData.heatmap_data.find(item => 
+                        item.day === day && item.hour === hour
+                    );
+                    
+                    const requests = dayHourData ? dayHourData.total_requests : 0;
+                    const intensity = maxRequests > 0 ? requests / maxRequests : 0;
+                    const color = getHeatmapColor(intensity);
+                    
+                    heatmapHTML += `
+                        <div class="heatmap-cell" 
+                             style="background-color: ${color};" 
+                             title="${day} ${hour}:00 - ${requests} requests">
+                            ${requests > 0 ? requests : ''}
+                        </div>
+                    `;
+                }
+                
+                heatmapHTML += `</div></div>`;
+            });
+            
+            heatmapHTML += `
+                <div class="heatmap-legend">
+                    <span>Less</span>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getHeatmapColor(0)}"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getHeatmapColor(0.25)}"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getHeatmapColor(0.5)}"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getHeatmapColor(0.75)}"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getHeatmapColor(1)}"></div>
+                    </div>
+                    <span>More</span>
+                </div>
+            `;
+            
+            container.innerHTML = heatmapHTML;
+        }
+
+        function getHeatmapColor(intensity) {
+            if (intensity === 0) return '#ebedf0';
+            if (intensity <= 0.25) return '#9be9a8';
+            if (intensity <= 0.5) return '#40c463';
+            if (intensity <= 0.75) return '#30a14e';
+            return '#216e39';
+        }
+
+        function displayAnomalies(anomalies) {
+            const container = document.getElementById('liveAnomalies');
+            
+            if (!anomalies || anomalies.length === 0) {
+                container.innerHTML = '<p style="color: #26de81;">✅ No anomalies detected</p>';
+                return;
+            }
+            
+            container.innerHTML = anomalies.map(anomaly => `
+                <div class="anomaly-item" style="border-left-color: ${getSeverityColor(anomaly.severity)};">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 5px;">
+                        <span class="anomaly-severity" style="color: ${getSeverityColor(anomaly.severity)};">
+                            ${anomaly.severity}
+                        </span>
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">
+                            ${anomaly.type.replace(/_/g, ' ')}
+                        </span>
+                    </div>
+                    <div>${anomaly.description}</div>
+                </div>
+            `).join('');
+        }
+
+        function getSeverityColor(severity) {
+            switch(severity) {
+                case 'high': return '#ff4757';
+                case 'medium': return '#ffa502';
+                case 'low': return '#26de81';
+                default: return '#747d8c';
+            }
+        }
+
+        function displayAttackDistribution(timeline) {
+            const ctx = document.getElementById('attackDistributionChart').getContext('2d');
+            
+            if (attackDistributionChart) {
+                attackDistributionChart.destroy();
+            }
+            
+            const summary = timeline.summary || {};
+            const labels = Object.keys(summary);
+            const data = Object.values(summary);
+            
+            if (labels.length === 0) {
+                document.getElementById('attackDistributionChart').parentElement.innerHTML = 
+                    '<p>No attack data available</p>';
+                return;
+            }
+            
+            attackDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map(label => label.replace(/_/g, ' ')),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#ff4757', '#ff6b6b', '#ff7675', '#fd79a8',
+                            '#e84393', '#a29bfe', '#6c5ce7', '#74b9ff'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayGeographicalAnalysis(geoData) {
+            const container = document.getElementById('geographicalAnalysis');
+            
+            if (!geoData) {
+                container.innerHTML = '<p>No geographical data available</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="overview-grid">
+                    <div class="overview-stat">
+                        <div class="stat-value">${geoData.total_unique_ips || 0}</div>
+                        <div class="stat-label">Unique IPs</div>
+                    </div>
+                    <div class="overview-stat">
+                        <div class="stat-value">${geoData.private_ips || 0}</div>
+                        <div class="stat-label">Private IPs</div>
+                    </div>
+                    <div class="overview-stat">
+                        <div class="stat-value">${geoData.public_ips || 0}</div>
+                        <div class="stat-label">Public IPs</div>
+                    </div>
+                    <div class="overview-stat">
+                        <div class="stat-value">${(geoData.suspicious_ips || []).length}</div>
+                        <div class="stat-label">Suspicious IPs</div>
+                    </div>
+                </div>
+                ${(geoData.suspicious_ips || []).length > 0 ? `
+                    <div style="margin-top: 15px;">
+                        <strong>Suspicious IPs:</strong>
+                        <div style="margin-top: 5px; font-family: monospace;">
+                            ${geoData.suspicious_ips.join(', ')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+
+        function showNotification(message, type = 'info') {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                z-index: 1001;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            
+            const colors = {
+                success: '#26de81',
+                error: '#ff4757',
+                warning: '#ffa502',
+                info: '#3742fa'
+            };
+            
+            notification.style.backgroundColor = colors[type] || colors.info;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Log Analytics Dashboard initialized');
+        });
+    </script>
+</body>
+</html>

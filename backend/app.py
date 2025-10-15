@@ -15,6 +15,7 @@ from ai_cleaner import ai_analyze_and_process, ai_clean_and_label
 from ai_data_analyzer import AIDataAnalyzer
 from ai_log_processor import AILogProcessor
 from pdf_to_dataset_processor import PDFToDatasetProcessor
+from log_analytics_dashboard import LogAnalyticsDashboard
 
 app = FastAPI(
     title="DataSmith AI - Intelligent CSV Processor",
@@ -1630,6 +1631,207 @@ async def pdf_health_check():
             "error": str(e),
             "pdf_libraries_available": False
         }
+
+# ===== LOG ANALYTICS DASHBOARD ENDPOINTS =====
+
+@app.post("/logs/dashboard")
+async def generate_log_dashboard(file: UploadFile):
+    """
+    Generate comprehensive log analytics dashboard
+    
+    Features:
+    - Top attacker IPs with risk scores
+    - Attack types timeline (per hour)
+    - Status code heatmap
+    - Live anomaly detection
+    - Security summary and recommendations
+    """
+    
+    if not file.filename.endswith(('.csv', '.log', '.txt')):
+        raise HTTPException(status_code=400, detail="File must be CSV, log, or txt format")
+    
+    try:
+        # Read the uploaded file
+        content = await file.read()
+        
+        # Try to read as CSV first
+        try:
+            if file.filename.endswith('.csv'):
+                df = pd.read_csv(io.StringIO(content.decode('utf-8')))
+            else:
+                # For log files, try to process with AI log processor first
+                log_processor = AILogProcessor()
+                
+                # Process with AI if available, otherwise use basic parsing
+                try:
+                    processed_data = await log_processor.process_logs_advanced(content.decode('utf-8'))
+                    df = pd.DataFrame(processed_data.get('structured_data', []))
+                except:
+                    # Fallback to basic log parsing
+                    lines = content.decode('utf-8').split('\n')
+                    parsed_logs = []
+                    
+                    for line in lines:
+                        if line.strip():
+                            # Basic log parsing - adapt based on your log format
+                            parts = line.split(' ')
+                            if len(parts) >= 7:
+                                parsed_logs.append({
+                                    'ip_address': parts[0],
+                                    'timestamp': f"{parts[3][1:]} {parts[4][:-1]}",
+                                    'method': parts[5][1:],
+                                    'endpoint': parts[6],
+                                    'status_code': parts[8] if len(parts) > 8 else '200',
+                                    'user_agent': ' '.join(parts[11:]) if len(parts) > 11 else ''
+                                })
+                    
+                    df = pd.DataFrame(parsed_logs)
+        
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error parsing file: {str(e)}")
+        
+        if df.empty:
+            raise HTTPException(status_code=400, detail="No data found in file")
+        
+        # Generate dashboard analytics
+        dashboard = LogAnalyticsDashboard()
+        dashboard_data = dashboard.generate_dashboard_data(df)
+        
+        # Clean the data for JSON response
+        dashboard_data = clean_for_json(dashboard_data)
+        
+        return {
+            "status": "success",
+            "filename": file.filename,
+            "data_points": len(df),
+            "dashboard": dashboard_data,
+            "processing_info": {
+                "columns_detected": list(df.columns),
+                "processing_time": datetime.now().isoformat()
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Dashboard generation failed: {str(e)}")
+
+@app.post("/logs/analyze-security")
+async def analyze_log_security(file: UploadFile):
+    """
+    Quick security analysis of log files
+    Focus on threats and anomalies
+    """
+    
+    try:
+        content = await file.read()
+        
+        # Process the log file
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(io.StringIO(content.decode('utf-8')))
+        else:
+            # Basic log parsing for security analysis
+            lines = content.decode('utf-8').split('\n')
+            parsed_logs = []
+            
+            for line in lines:
+                if line.strip():
+                    # Extract key security-relevant info
+                    parts = line.split(' ')
+                    if len(parts) >= 3:
+                        parsed_logs.append({
+                            'ip_address': parts[0],
+                            'request_line': line,
+                            'timestamp': datetime.now().isoformat()  # Placeholder
+                        })
+            
+            df = pd.DataFrame(parsed_logs)
+        
+        if df.empty:
+            return {"status": "error", "message": "No data to analyze"}
+        
+        # Security-focused analysis
+        dashboard = LogAnalyticsDashboard()
+        
+        # Get top attackers and anomalies
+        top_attackers = dashboard._get_top_attacker_ips(df, top_n=10)
+        anomalies = dashboard._detect_live_anomalies(df)
+        security_summary = dashboard._generate_security_summary(df)
+        
+        return {
+            "status": "success",
+            "security_analysis": {
+                "risk_level": security_summary.get('risk_level', 'unknown'),
+                "top_attackers": top_attackers[:5],  # Top 5 most dangerous
+                "critical_anomalies": [a for a in anomalies if a.get('severity') == 'high'],
+                "recommendations": security_summary.get('recommendations', []),
+                "total_threats": len([a for a in anomalies if a.get('severity') in ['high', 'medium']])
+            },
+            "metadata": {
+                "analyzed_requests": len(df),
+                "analysis_time": datetime.now().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Security analysis failed: {str(e)}")
+
+@app.get("/logs/dashboard-demo")
+async def get_dashboard_demo():
+    """
+    Get demo dashboard data for testing and development
+    """
+    
+    # Generate sample log data
+    sample_data = []
+    base_time = datetime.now() - timedelta(hours=24)
+    
+    ips = ['192.168.1.100', '10.0.0.50', '203.0.113.1', '198.51.100.2', '203.0.113.3']
+    endpoints = ['/login', '/admin', '/api/data', '/upload', '/search', '/', '/products']
+    status_codes = [200, 404, 500, 403, 401, 302]
+    attack_patterns = [
+        'SELECT * FROM users WHERE id=1 OR 1=1',
+        '<script>alert("xss")</script>',
+        '../../../etc/passwd',
+        '; cat /etc/passwd',
+        'admin\' OR \'1\'=\'1'
+    ]
+    
+    for i in range(1000):
+        # Simulate different types of requests
+        timestamp = base_time + timedelta(minutes=i)
+        ip = np.random.choice(ips)
+        endpoint = np.random.choice(endpoints)
+        status = np.random.choice(status_codes, p=[0.7, 0.1, 0.05, 0.1, 0.03, 0.02])
+        
+        # Occasionally add attack patterns
+        request_body = ""
+        if np.random.random() < 0.1:  # 10% chance of attack
+            request_body = np.random.choice(attack_patterns)
+        
+        sample_data.append({
+            'ip_address': ip,
+            'timestamp': timestamp.isoformat(),
+            'method': np.random.choice(['GET', 'POST', 'PUT'], p=[0.7, 0.25, 0.05]),
+            'endpoint': endpoint,
+            'status_code': status,
+            'user_agent': 'Mozilla/5.0 (compatible; DemoBot/1.0)',
+            'request_body': request_body,
+            'request_size': np.random.randint(100, 5000)
+        })
+    
+    df = pd.DataFrame(sample_data)
+    
+    # Generate dashboard
+    dashboard = LogAnalyticsDashboard()
+    dashboard_data = dashboard.generate_dashboard_data(df)
+    
+    return {
+        "status": "demo",
+        "message": "Sample dashboard data generated",
+        "dashboard": clean_for_json(dashboard_data),
+        "note": "This is demo data for testing purposes"
+    }
 
 # For Render deployment
 if __name__ == "__main__":
