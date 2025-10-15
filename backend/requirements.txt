@@ -1,0 +1,24 @@
+# FastAPI and web server
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+
+# Data processing - using flexible versions to avoid compilation issues
+pandas>=2.0.0
+numpy>=1.24.0
+
+# HTTP requests for AI model communication
+requests>=2.28.0
+
+# File handling and utilities
+python-multipart>=0.0.5
+aiofiles>=23.0.0
+
+# Date/time parsing
+python-dateutil>=2.8.0
+
+# Optional: for better CSV parsing
+chardet>=5.0.0
+
+# PDF processing libraries
+pdfplumber>=0.9.0
+PyMuPDF>=1.23.0

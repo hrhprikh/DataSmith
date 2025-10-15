@@ -1,0 +1,7 @@
+content_id,text_content,content_type,section
+1,"Test Document","header","document_info"
+2,"Name: John Doe","contact_info","personal_data"
+3,"Age: 30","text_content","personal_data"
+4,"City: New York","address","personal_data"
+5,"Email: john@example.com","contact_info","personal_data"
+6,"Phone: 555-1234","contact_info","personal_data"

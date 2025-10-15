@@ -1,0 +1,42 @@
+[
+  {
+    "patient_id": "P001",
+    "name": "John",
+    "age": 45,
+    "gender": "Male",
+    "temperature": 98.6,
+    "diagnosis": "Normal"
+  },
+  {
+    "patient_id": "P002",
+    "name": "Sarah",
+    "age": 50,
+    "gender": "Female",
+    "temperature": 102.1,
+    "diagnosis": "Fever"
+  },
+  {
+    "patient_id": "P003",
+    "name": "Arun",
+    "age": 60,
+    "gender": "Male",
+    "temperature": 120.0,
+    "diagnosis": "High BP"
+  },
+  {
+    "patient_id": "P004",
+    "name": "Pooja",
+    "age": 28,
+    "gender": "Female",
+    "temperature": 96.4,
+    "diagnosis": "Normal"
+  },
+  {
+    "patient_id": "P005",
+    "name": "Ravi",
+    "age": 33,
+    "gender": "Male",
+    "temperature": 104.2,
+    "diagnosis": "Fever"
+  }
+]

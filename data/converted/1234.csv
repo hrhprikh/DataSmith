@@ -1,0 +1,6 @@
+order_id,product_name,quantity,price,status
+ORD123,Product A,2,499,Delivered
+ORD124,Product B,1,999,Pending
+ORD125,Product C,5,1999,Cancelled
+ORD126,Product D,3,299,Delivered
+ORD127,Product E,1,150,Returned

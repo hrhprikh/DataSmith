@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Alice",
+    "age": " 24",
+    "gender": " Female",
+    "location": " New York",
+    "year_of_birth": 2005,
+    "review": " good service "
+  },
+  {
+    "name": "Bob",
+    "age": " 30",
+    "gender": " Male",
+    "location": " ",
+    "year_of_birth": 2006,
+    "review": " BAD experience"
+  },
+  {
+    "name": "Charlie",
+    "age": " ",
+    "gender": " Male",
+    "location": " Los Angeles",
+    "year_of_birth": 1994,
+    "review": " Good service"
+  },
+  {
+    "name": "Alice",
+    "age": " 24",
+    "gender": " Female",
+    "location": " New York",
+    "year_of_birth": 1998,
+    "review": " good service "
+  },
+  {
+    "name": "David",
+    "age": " 29",
+    "gender": NaN,
+    "location": " Chicago",
+    "year_of_birth": 1999,
+    "review": " Average "
+  },
+  {
+    "name": "Eve",
+    "age": " 22",
+    "gender": " Female",
+    "location": " Boston",
+    "year_of_birth": 2010,
+    "review": " bad response "
+  },
+  {
+    "name": NaN,
+    "age": " 28",
+    "gender": " Male",
+    "location": " Boston",
+    "year_of_birth": 2020,
+    "review": " Excellent"
+  }
+]

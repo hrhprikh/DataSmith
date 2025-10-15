@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataSmith AI - Intelligent CSV Processing</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <span>DataSmith AI</span>
+                </div>
+                <nav class="nav-links">
+                    <a href="#process" class="nav-link">AI Processing</a>
+                    <a href="#convert" class="nav-link">Conversions</a>
+                    <a href="#analyze" class="nav-link">Analysis</a>
+                    <a href="#docs" class="nav-link">API Docs</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Intelligent CSV Processing with 
+                    <span class="gradient-text">AI Power</span>
+                </h1>
+                <p class="hero-description">
+                    Transform your CSV files with Mistral 7B AI. Automatic header detection, 
+                    smart labeling, and seamless conversions between CSV and JSON formats.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <i class="fas fa-brain"></i>
+                        <span>AI-Powered</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-magic"></i>
+                        <span>Auto Headers</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>CSV ↔ JSON</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LM Studio Connection Section -->
+    <section class="lm-studio-connection">
+        <div class="container">
+            <div class="connection-card">
+                <div class="connection-header">
+                    <div class="connection-title">
+                        <i class="fas fa-brain connection-icon"></i>
+                        <h3>AI Engine Configuration</h3>
+                    </div>
+                    <div class="connection-status" id="connection-status">
+                        <i class="fas fa-circle status-indicator"></i>
+                        <span class="status-text">Disconnected</span>
+                    </div>
+                </div>
+                
+                <div class="connection-content">
+                    <div class="connection-settings">
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                <i class="fas fa-server"></i>
+                                LM Studio Server URL
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="setting-input" id="lm-studio-url" 
+                                       value="http://localhost:1234" placeholder="http://localhost:1234">
+                                <button class="btn btn-outline" id="test-connection-btn">
+                                    <i class="fas fa-plug"></i>
+                                    Test Connection
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                <i class="fas fa-robot"></i>
+                                AI Model Selection
+                            </label>
+                            <div class="model-selection">
+                                <select class="setting-select" id="model-select" disabled>
+                                    <option value="">Connect to see available models...</option>
+                                </select>
+                                <button class="btn btn-outline" id="refresh-models-btn" disabled>
+                                    <i class="fas fa-sync-alt"></i>
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection-info">
+                        <div class="info-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Start LM Studio and load your preferred model (Mistral 7B recommended)</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Ensure the local server is running on the specified port</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            
+            <!-- AI Processing Section -->
+            <section id="process" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-robot"></i>
+                        AI Processing
+                    </h2>
+                    <p class="section-description">
+                        Upload your CSV file and let Mistral 7B AI analyze, clean, and enhance your data
+                    </p>
+                </div>
+                
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-brain card-icon"></i>
+                            <h3>Intelligent Processing</h3>
+                        </div>
+                        <p>Full AI analysis with automatic header detection and smart labeling</p>
+                        
+                        <div class="upload-area" id="ai-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Drop your CSV file here or click to upload</span>
+                            <input type="file" id="ai-file-input" accept=".csv" hidden>
+                        </div>
+                        
+                        <div class="options">
+                            <label class="checkbox">
+                                <input type="checkbox" id="force-ai" checked>
+                                <span>Force AI Processing</span>
+                            </label>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="process-btn">
+                            <i class="fas fa-cog"></i>
+                            Process with AI
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line card-icon"></i>
+                            <h3>Quick Analysis</h3>
+                        </div>
+                        <p>Get insights about your data structure without full processing</p>
+                        
+                        <div class="upload-area" id="analyze-upload">
+                            <i class="fas fa-search"></i>
+                            <span>Drop CSV file for analysis</span>
+                            <input type="file" id="analyze-file-input" accept=".csv" hidden>
+                        </div>
+                        
+                        <button class="btn btn-secondary" id="analyze-btn">
+                            <i class="fas fa-search"></i>
+                            Analyze Data
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Conversion Section -->
+            <section id="convert" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-exchange-alt"></i>
+                        File Conversions
+                    </h2>
+                    <p class="section-description">
+                        Convert between CSV and JSON formats with intelligent header generation
+                    </p>
+                </div>
+                
+                <div class="conversion-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="csv-to-json">
+                            <i class="fas fa-table"></i>
+                            CSV → JSON
+                        </button>
+                        <button class="tab-btn" data-tab="json-to-csv">
+                            <i class="fas fa-code"></i>
+                            JSON → CSV
+                        </button>
+                        <button class="tab-btn" data-tab="batch">
+                            <i class="fas fa-layer-group"></i>
+                            Batch Convert
+                        </button>
+                        <button class="tab-btn" data-tab="ai-report">
+                            <i class="fas fa-chart-line"></i>
+                            AI Data Report
+                        </button>
+                        <button class="tab-btn" data-tab="log-processor">
+                            <i class="fas fa-file-alt"></i>
+                            Log Processor
+                        </button>
+                        <button class="tab-btn" data-tab="pdf-processor">
+                            <i class="fas fa-file-pdf"></i>
+                            PDF to Dataset
+                        </button>
+                    </div>
+                    
+                    <!-- CSV to JSON Tab -->
+                    <div class="tab-content active" id="csv-to-json">
+                        <div class="card-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-magic card-icon"></i>
+                                    <h3>Smart Conversion</h3>
+                                </div>
+                                <p>AI-powered conversion with perfect headers</p>
+                                
+                                <div class="upload-area" id="csv-smart-upload">
+                                    <i class="fas fa-file-csv"></i>
+                                    <span>Upload CSV for smart conversion</span>
+                                    <input type="file" id="csv-smart-input" accept=".csv" hidden>
+                                </div>
+                                
+                                <div class="options">
+                                    <label class="select-label">JSON Format:</label>
+                                    <select id="json-format" class="select">
+                                        <option value="records">Records (default)</option>
+                                        <option value="index">Index-based</option>
+                                        <option value="values">Values array</option>
+                                        <option value="split">Split format</option>
+                                    </select>
+                                    
+                                    <label class="checkbox">
+                                        <input type="checkbox" id="pretty-json" checked>
+                                        <span>Pretty formatting</span>
+                                    </label>
+                                </div>
+                                
+                                <button class="btn btn-primary" id="csv-smart-btn">
+                                    <i class="fas fa-brain"></i>
+                                    Smart Convert
+                                </button>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-file-export card-icon"></i>
+                                    <h3>Regular Conversion</h3>
+                                </div>
+                                <p>Standard CSV to JSON conversion</p>
+                                
+                                <div class="upload-area" id="csv-regular-upload">
+                                    <i class="fas fa-file-csv"></i>
+                                    <span>Upload CSV file</span>
+                                    <input type="file" id="csv-regular-input" accept=".csv" hidden>
+                                </div>
+                                
+                                <button class="btn btn-secondary" id="csv-regular-btn">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    Convert
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- JSON to CSV Tab -->
+                    <div class="tab-content" id="json-to-csv">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-file-import card-icon"></i>
+                                <h3>JSON to CSV Conversion</h3>
+                            </div>
+                            <p>Convert JSON files to CSV format with automatic flattening</p>
+                            
+                            <div class="upload-area" id="json-upload">
+                                <i class="fas fa-file-code"></i>
+                                <span>Upload JSON file</span>
+                                <input type="file" id="json-input" accept=".json" hidden>
+                            </div>
+                            
+                            <div class="options">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="auto-flatten" checked>
+                                    <span>Auto-flatten nested structures</span>
+                                </label>
+                            </div>
+                            
+                            <button class="btn btn-primary" id="json-convert-btn">
+                                <i class="fas fa-table"></i>
+                                Convert to CSV
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Batch Conversion Tab -->
+                    <div class="tab-content" id="batch">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-layer-group card-icon"></i>
+                                <h3>Batch Conversion</h3>
+                            </div>
+                            <p>Convert multiple files at once</p>
+                            
+                            <div class="upload-area" id="batch-upload">
+                                <i class="fas fa-files"></i>
+                                <span>Drop multiple CSV/JSON files</span>
+                                <input type="file" id="batch-input" multiple accept=".csv,.json" hidden>
+                            </div>
+                            
+                            <div class="options">
+                                <label class="select-label">Target Format:</label>
+                                <select id="batch-format" class="select">
+                                    <option value="json">Convert to JSON</option>
+                                    <option value="csv">Convert to CSV</option>
+                                </select>
+                            </div>
+                            
+                            <button class="btn btn-primary" id="batch-btn">
+                                <i class="fas fa-layer-group"></i>
+                                Batch Convert
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Data Report Tab -->
+                    <div class="tab-content" id="ai-report">
+                        <div class="card-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-line card-icon"></i>
+                                    <h3>AI Data Analysis</h3>
+                                </div>
+                                <p>Generate comprehensive data analysis reports with AI insights for CSV and JSON files</p>
+                                
+                                <div class="upload-area" id="ai-report-upload">
+                                    <i class="fas fa-file-upload"></i>
+                                    <span>Drop CSV or JSON file for AI analysis</span>
+                                    <input type="file" id="ai-report-input" accept=".csv,.json" hidden>
+                                </div>
+                                
+                                <div class="options">
+                                    <label class="checkbox">
+                                        <input type="checkbox" id="include-patterns" checked>
+                                        <span>Include pattern analysis</span>
+                                    </label>
+                                    <label class="checkbox">
+                                        <input type="checkbox" id="include-recommendations" checked>
+                                        <span>Include AI recommendations</span>
+                                    </label>
+                                </div>
+                                
+                                <button class="btn btn-primary" id="ai-report-btn">
+                                    <i class="fas fa-brain"></i>
+                                    Generate AI Report
+                                </button>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-eye card-icon"></i>
+                                    <h3>Sample Report</h3>
+                                </div>
+                                <p>View a sample AI data analysis report with our demo dataset</p>
+                                
+                                <button class="btn btn-secondary" id="ai-sample-report-btn">
+                                    <i class="fas fa-play"></i>
+                                    View Sample Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Log Processor Tab -->
+                    <div class="tab-content" id="log-processor">
+                        <div class="card-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-file-alt card-icon"></i>
+                                    <h3>Process Log Files</h3>
+                                </div>
+                                <p>Upload .log or .txt files for AI-powered analysis and anomaly detection</p>
+                                
+                                <div class="upload-area" id="log-file-upload">
+                                    <i class="fas fa-file-upload"></i>
+                                    <span>Drop log files here (.log, .txt)</span>
+                                    <input type="file" id="log-file-input" accept=".log,.txt" hidden>
+                                </div>
+                                
+                                <button class="btn btn-primary" id="process-log-file-btn">
+                                    <i class="fas fa-cogs"></i>
+                                    Process Log File
+                                </button>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-edit card-icon"></i>
+                                    <h3>Process Log Text</h3>
+                                </div>
+                                <p>Paste raw log text directly for immediate processing</p>
+                                
+                                <textarea 
+                                    id="log-text-input" 
+                                    class="textarea" 
+                                    placeholder="Paste your raw log text here...&#10;Example:&#10;2024-01-15 10:30:15 INFO UserService - User logged in&#10;2024-01-15 10:30:16 ERROR DatabaseService - Connection failed"
+                                    rows="6"
+                                ></textarea>
+                                
+                                <button class="btn btn-primary" id="process-log-text-btn">
+                                    <i class="fas fa-play"></i>
+                                    Process Log Text
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-columns card-icon"></i>
+                                <h3>Custom Column Selection</h3>
+                            </div>
+                            <p>Select specific columns from processed logs for custom download</p>
+                            
+                            <div class="upload-area" id="log-column-upload">
+                                <i class="fas fa-file-upload"></i>
+                                <span>Upload log file to see available columns</span>
+                                <input type="file" id="log-column-input" accept=".log,.txt" hidden>
+                            </div>
+                            
+                            <div id="column-selection-container" class="column-selection-container hidden">
+                                <h4><i class="fas fa-list"></i> Available Columns</h4>
+                                <div class="columns-actions">
+                                    <button class="btn btn-small" id="select-all-columns">Select All</button>
+                                    <button class="btn btn-small" id="deselect-all-columns">Deselect All</button>
+                                    <button class="btn btn-small" id="select-essential-columns">Essential Only</button>
+                                </div>
+                                <div id="column-categories" class="column-categories"></div>
+                                <div class="download-filtered-section">
+                                    <button class="btn btn-primary" id="create-filtered-csv-btn" disabled>
+                                        <i class="fas fa-download"></i>
+                                        Download Selected Columns
+                                    </button>
+                                    <span id="selected-count" class="selected-count">0 columns selected</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-info-circle card-icon"></i>
+                                <h3>Log Processing Pipeline</h3>
+                            </div>
+                            <div class="pipeline-flow">
+                                <div class="pipeline-step">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Raw Log Text</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-search"></i>
+                                    <span>Regex/AI Parser</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-table"></i>
+                                    <span>Structured DataFrame</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-brain"></i>
+                                    <span>AI Labeler</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Anomaly Detector</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>Insights & CSV</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PDF Processor Tab -->
+                    <div class="tab-content" id="pdf-processor">
+                        <div class="card-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-file-pdf card-icon"></i>
+                                    <h3>PDF to CSV Dataset</h3>
+                                </div>
+                                <p>Extract structured data from PDF files and convert to CSV format</p>
+                                
+                                <div class="upload-area" id="pdf-csv-upload">
+                                    <i class="fas fa-file-upload"></i>
+                                    <span>Drop PDF file here (.pdf)</span>
+                                    <input type="file" id="pdf-csv-input" accept=".pdf" hidden>
+                                </div>
+                                
+                                <button class="btn btn-primary" id="process-pdf-csv-btn">
+                                    <i class="fas fa-table"></i>
+                                    Convert to CSV Dataset
+                                </button>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-code card-icon"></i>
+                                    <h3>PDF to JSON Dataset</h3>
+                                </div>
+                                <p>Extract structured data from PDF files and convert to JSON format</p>
+                                
+                                <div class="upload-area" id="pdf-json-upload">
+                                    <i class="fas fa-file-upload"></i>
+                                    <span>Drop PDF file here (.pdf)</span>
+                                    <input type="file" id="pdf-json-input" accept=".pdf" hidden>
+                                </div>
+                                
+                                <button class="btn btn-primary" id="process-pdf-json-btn">
+                                    <i class="fas fa-file-code"></i>
+                                    Convert to JSON Dataset
+                                </button>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-play-circle card-icon"></i>
+                                    <h3>PDF Health Check</h3>
+                                </div>
+                                <p>Check if PDF processing dependencies are properly installed</p>
+                                
+                                <button class="btn btn-secondary" id="pdf-health-check-btn">
+                                    <i class="fas fa-heartbeat"></i>
+                                    Check Dependencies
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-info-circle card-icon"></i>
+                                <h3>PDF Processing Pipeline</h3>
+                            </div>
+                            <div class="pipeline-flow">
+                                <div class="pipeline-step">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Raw PDF File</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-search"></i>
+                                    <span>PDF Text Extractor</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-broom"></i>
+                                    <span>Data Cleaner & Structurer</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-brain"></i>
+                                    <span>AI Labeler</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-table"></i>
+                                    <span>DataFrame</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Analytics + Anomaly Detection</span>
+                                </div>
+                                <div class="pipeline-arrow">↓</div>
+                                <div class="pipeline-step">
+                                    <i class="fas fa-save"></i>
+                                    <span>Output (CSV / JSON)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Results
+                    </h2>
+                </div>
+                
+                <div id="results-container" class="results-container">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No results yet. Upload and process a file to see results here.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loading-text">Processing your file...</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 DataSmith AI. Powered by Mistral 7B.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

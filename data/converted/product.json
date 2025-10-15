@@ -1,0 +1,32 @@
+[
+  {
+    "product_name": "iPhone 15",
+    "price": 999,
+    "rating": 4.8,
+    "review": "Great camera quality"
+  },
+  {
+    "product_name": "Samsung Galaxy S23",
+    "price": 899,
+    "rating": 4.6,
+    "review": "Good performance"
+  },
+  {
+    "product_name": "Redmi Note 13",
+    "price": 299,
+    "rating": 3.5,
+    "review": "Average phone"
+  },
+  {
+    "product_name": "Nothing Phone 2",
+    "price": 749,
+    "rating": 4.3,
+    "review": "Sleek design"
+  },
+  {
+    "product_name": "Vivo V29",
+    "price": 399,
+    "rating": 2.8,
+    "review": "Bad battery backup"
+  }
+]
